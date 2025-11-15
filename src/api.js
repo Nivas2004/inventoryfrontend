@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://inventorybackend-1-50sj.onrender.com";
+const API_URL = "https://inventorybackend-3.onrender.com";
 
 export const getProducts = () => axios.get(`${API_URL}/products/`);
 export const deleteProduct = (id) => axios.delete(`${API_URL}/products/${id}`);

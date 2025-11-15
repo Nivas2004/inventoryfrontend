@@ -13,11 +13,19 @@ function Sidebar() {
         open ? "w-64" : "w-16"
       }`}
     >
-      {/* Toggle Button */}
-      <div className="p-4 flex items-center justify-between">
+      {/* TOP SECTION — Toggle + Title */}
+      <div className="p-4 flex items-center gap-3">
+        {/* Toggle Button */}
         <button onClick={toggleSidebar}>
           <FiMenu size={24} />
         </button>
+
+        {/* Inventory Menu Title (shows only when open) */}
+        {open && (
+          <h1 className="text-lg font-semibold whitespace-nowrap">
+            Inventory Menu
+          </h1>
+        )}
       </div>
 
       {/* Menu Items */}

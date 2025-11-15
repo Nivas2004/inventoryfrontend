@@ -18,9 +18,9 @@ function AddProduct() {
     stock: "",
   });
 
-  const { open } = useSidebar(); // <-- Sidebar state
+  const { open } = useSidebar();
 
-  // Auth check
+  // 🔐 Auth check
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (!user) window.location.href = "/login";
@@ -28,10 +28,29 @@ function AddProduct() {
     });
   }, []);
 
+  // 🔢 Calculate profit %
+  const profit =
+    product.purchasePrice && product.sellingPrice
+      ? (
+          ((product.sellingPrice - product.purchasePrice) /
+            product.purchasePrice) *
+          100
+        ).toFixed(2)
+      : 0;
+
+  // Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await addProduct(product);
+    // Convert price fields to number before sending
+    const formattedProduct = {
+      ...product,
+      purchasePrice: parseFloat(product.purchasePrice),
+      sellingPrice: parseFloat(product.sellingPrice),
+      stock: Number(product.stock),
+    };
+
+    await addProduct(formattedProduct);
     alert("Product added successfully!");
     window.location.href = "/";
   };
@@ -58,12 +77,16 @@ function AddProduct() {
             <input
               className="border p-3 w-full rounded"
               placeholder="Product Name"
-              onChange={(e) => setProduct({ ...product, name: e.target.value })}
+              value={product.name}
+              onChange={(e) =>
+                setProduct({ ...product, name: e.target.value })
+              }
             />
 
             <input
               className="border p-3 w-full rounded"
               placeholder="Category"
+              value={product.category}
               onChange={(e) =>
                 setProduct({ ...product, category: e.target.value })
               }
@@ -72,6 +95,7 @@ function AddProduct() {
             <input
               className="border p-3 w-full rounded"
               placeholder="Supplier"
+              value={product.supplier}
               onChange={(e) =>
                 setProduct({ ...product, supplier: e.target.value })
               }
@@ -81,8 +105,12 @@ function AddProduct() {
               type="number"
               className="border p-3 w-full rounded"
               placeholder="Purchase Price"
+              value={product.purchasePrice}
               onChange={(e) =>
-                setProduct({ ...product, purchasePrice: e.target.value })
+                setProduct({
+                  ...product,
+                  purchasePrice: parseFloat(e.target.value),
+                })
               }
             />
 
@@ -90,15 +118,25 @@ function AddProduct() {
               type="number"
               className="border p-3 w-full rounded"
               placeholder="Selling Price"
+              value={product.sellingPrice}
               onChange={(e) =>
-                setProduct({ ...product, sellingPrice: e.target.value })
+                setProduct({
+                  ...product,
+                  sellingPrice: parseFloat(e.target.value),
+                })
               }
             />
+
+            {/* Profit Calculation Box */}
+            <div className="bg-blue-100 border border-blue-300 text-blue-800 p-3 rounded text-center font-semibold">
+              Profit Percentage: {profit}% 📈
+            </div>
 
             <input
               type="number"
               className="border p-3 w-full rounded"
-              placeholder="Stock"
+              placeholder="Stock Quantity"
+              value={product.stock}
               onChange={(e) =>
                 setProduct({ ...product, stock: e.target.value })
               }

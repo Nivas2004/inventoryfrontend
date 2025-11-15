@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { useSidebar } from "../context/SidebarContext";
 
 function EditProduct() {
   const { id } = useParams();
@@ -19,7 +20,9 @@ function EditProduct() {
     stock: "",
   });
 
-  // 🔐 Firebase Login Check
+  const { open } = useSidebar(); // <-- ADDED
+
+  // 🔐 Login check
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (!user) window.location.href = "/login";
@@ -31,12 +34,17 @@ function EditProduct() {
   useEffect(() => {
     const load = async () => {
       const res = await getProductById(id);
-      setProduct(res.data); // auto-fill the form
+
+      // Remove _id field before setting state
+      const { _id, ...cleanData } = res.data;
+
+      setProduct(cleanData);
     };
+
     load();
   }, [id]);
 
-  // Submit update
+  // Update handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     await updateProduct(id, product);
@@ -48,7 +56,12 @@ function EditProduct() {
     <div className="flex">
       <Sidebar />
 
-      <div className="ml-64 w-full bg-gray-100 min-h-screen">
+      {/* ⭐ FIXED MARGIN LIKE DASHBOARD ⭐ */}
+      <div
+        className={`min-h-screen w-full bg-gray-100 transition-all duration-300 ${
+          open ? "ml-64" : "ml-16"
+        }`}
+      >
         <Navbar user={currentUser} />
 
         <div className="p-8">
@@ -59,18 +72,14 @@ function EditProduct() {
             onSubmit={handleSubmit}
           >
             <input
-              name="name"
               className="border p-2 w-full"
               placeholder="Product Name"
               value={product.name}
-              onChange={(e) =>
-                setProduct({ ...product, name: e.target.value })
-              }
+              onChange={(e) => setProduct({ ...product, name: e.target.value })}
               required
             />
 
             <input
-              name="category"
               className="border p-2 w-full"
               placeholder="Category"
               value={product.category}
@@ -81,7 +90,6 @@ function EditProduct() {
             />
 
             <input
-              name="supplier"
               className="border p-2 w-full"
               placeholder="Supplier"
               value={product.supplier}
@@ -92,7 +100,6 @@ function EditProduct() {
             />
 
             <input
-              name="purchasePrice"
               type="number"
               className="border p-2 w-full"
               placeholder="Purchase Price"
@@ -104,7 +111,6 @@ function EditProduct() {
             />
 
             <input
-              name="sellingPrice"
               type="number"
               className="border p-2 w-full"
               placeholder="Selling Price"
@@ -116,10 +122,9 @@ function EditProduct() {
             />
 
             <input
-              name="stock"
               type="number"
               className="border p-2 w-full"
-              placeholder="Stock Quantity"
+              placeholder="Stock"
               value={product.stock}
               onChange={(e) =>
                 setProduct({ ...product, stock: e.target.value })
@@ -127,10 +132,7 @@ function EditProduct() {
               required
             />
 
-            <button
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              type="submit"
-            >
+            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
               Update Product
             </button>
           </form>
