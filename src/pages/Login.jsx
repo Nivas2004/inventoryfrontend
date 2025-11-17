@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, provider } from "../firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -14,17 +14,6 @@ function Login() {
       window.location.href = "/";
     } catch (err) {
       alert("Invalid login credentials");
-      console.error(err);
-    }
-  };
-
-  // 🔹 Google Login
-  const googleLogin = async () => {
-    try {
-      await signInWithPopup(auth, provider);
-      window.location.href = "/";
-    } catch (err) {
-      alert("Google login failed");
       console.error(err);
     }
   };
@@ -65,15 +54,6 @@ function Login() {
           className="bg-blue-600 text-white py-2 w-full rounded hover:bg-blue-700 transition"
         >
           Login
-        </button>
-
-        {/* Google Login */}
-        <button
-          type="button"
-          onClick={googleLogin}
-          className="bg-red-500 text-white py-2 w-full rounded mt-3 hover:bg-red-600 transition"
-        >
-          Continue with Google
         </button>
 
         <p className="text-center mt-4 text-gray-600">
