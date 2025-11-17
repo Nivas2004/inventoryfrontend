@@ -4,11 +4,11 @@ import { GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCAqLJALK2S9t3snGHRHRn6-ED_btmHf14",
-  authDomain: "inventoryfrontend-xb74.vercel.app",
+  authDomain: "inventory-88558.firebaseapp.com",
   projectId: "inventory-88558",
-  storageBucket: "inventory-88558.appspot.com",
+  storageBucket: "inventory-88558.firebasestorage.app",
   messagingSenderId: "641405424048",
-  appId: "1:641405424048:web:b8fcc8cdab628e84f90675",
+  appId: "1:641405424048:web:f9fe41710db32dadf90675",
 };
 
 const app = initializeApp(firebaseConfig);
