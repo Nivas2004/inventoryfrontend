@@ -13,7 +13,9 @@ function Dashboard() {
 
   const { open } = useSidebar();
 
+  // ------------------------------
   // AUTH CHECK
+  // ------------------------------
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (!user) window.location.href = "/login";
@@ -21,7 +23,9 @@ function Dashboard() {
     });
   }, []);
 
-  // LOAD PRODUCTS FOR CURRENT USER
+  // ------------------------------
+  // LOAD PRODUCTS after user loads
+  // ------------------------------
   useEffect(() => {
     if (!currentUser) return;
 
@@ -37,7 +41,9 @@ function Dashboard() {
     fetchProducts();
   }, [currentUser]);
 
-  // DELETE PRODUCT
+  // ------------------------------
+  // DELETE PRODUCT (with userId)
+  // ------------------------------
   const handleDelete = async (id) => {
     if (!currentUser) return;
 
@@ -49,12 +55,16 @@ function Dashboard() {
     }
   };
 
+  // ------------------------------
   // SEARCH FILTER
+  // ------------------------------
   const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  // ------------------------------
   // EXPORT CSV
+  // ------------------------------
   const exportToCSV = () => {
     if (products.length === 0) return alert("No products to export!");
 
@@ -188,10 +198,9 @@ function Dashboard() {
                         <td className="p-3">{p.stock}</td>
 
                         <td className="p-3 flex items-center justify-center gap-2">
-
-                          {/* UPDATED EDIT LINK WITH USER ID */}
+                          {/* ❤️ FIXED EDIT LINK */}
                           <a
-                            href={`/edit/${p.id}/${currentUser.uid}`}
+                            href={`/edit/${p.id}`} 
                             className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
                           >
                             Edit

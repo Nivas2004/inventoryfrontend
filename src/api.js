@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // 🔥 Change this to your deployed backend OR local server
-const API_URL = "https://inventorybackend-4.onrender.com";
+const API_URL = "https://inventorybackend-6.onrender.com";
 
 // ------------------------------
 // GET ALL PRODUCTS OF ONE USER

@@ -16,7 +16,7 @@ function AddProduct() {
     purchasePrice: "",
     sellingPrice: "",
     stock: "",
-    userId: "", // IMPORTANT: backend expects this field
+    userId: "", // backend expects this
   });
 
   const { open } = useSidebar();
@@ -29,7 +29,7 @@ function AddProduct() {
       } else {
         setCurrentUser(user);
 
-        // store user ID into product object
+        // store firebase UID
         setProduct((prev) => ({
           ...prev,
           userId: user.uid,
@@ -38,7 +38,7 @@ function AddProduct() {
     });
   }, []);
 
-  // 🔢 Calculate profit %
+  // Profit calculation
   const profit =
     product.purchasePrice && product.sellingPrice
       ? (
@@ -57,11 +57,12 @@ function AddProduct() {
       purchasePrice: Number(product.purchasePrice),
       sellingPrice: Number(product.sellingPrice),
       stock: Number(product.stock),
-      userId: currentUser.uid, // FINAL FIX
+      userId: currentUser.uid, // ensure correct value
     };
 
     await addProduct(formattedProduct);
     alert("Product added successfully!");
+
     window.location.href = "/";
   };
 

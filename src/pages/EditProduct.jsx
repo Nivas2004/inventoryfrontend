@@ -8,7 +8,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useSidebar } from "../context/SidebarContext";
 
 function EditProduct() {
-  const { id, uid } = useParams(); // 🔥 important (id + user uid)
+  const { id } = useParams(); // ✅ Only ID is needed
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -25,7 +25,9 @@ function EditProduct() {
 
   const { open } = useSidebar();
 
-  // 🔐 AUTH CHECK
+  // -------------------------------------------------
+  // AUTH CHECK
+  // -------------------------------------------------
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (!user) {
@@ -36,7 +38,9 @@ function EditProduct() {
     });
   }, []);
 
-  // 🔥 LOAD PRODUCT USING userId + id
+  // -------------------------------------------------
+  // LOAD PRODUCT (Protected by user ID)
+  // -------------------------------------------------
   useEffect(() => {
     if (!currentUser) return;
 
@@ -45,7 +49,6 @@ function EditProduct() {
         const res = await getProductById(id, currentUser.uid);
         const data = res.data;
 
-        // Security : check user ownership
         if (data.userId !== currentUser.uid) {
           alert("You do not have permission to edit this product.");
           navigate("/");
@@ -55,7 +58,7 @@ function EditProduct() {
         setProduct(data);
         setLoading(false);
       } catch (err) {
-        console.log("Error loading product:", err);
+        console.log("❌ Error loading product:", err);
         alert("Failed to load product.");
       }
     };
@@ -63,19 +66,21 @@ function EditProduct() {
     loadProduct();
   }, [currentUser, id, navigate]);
 
+  // -------------------------------------------------
   // UPDATE PRODUCT
+  // -------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const updated = {
+    const updatedProduct = {
       ...product,
       purchasePrice: Number(product.purchasePrice),
       sellingPrice: Number(product.sellingPrice),
       stock: Number(product.stock),
-      userId: currentUser.uid, // ensure correct assignment
+      userId: currentUser.uid,
     };
 
-    await updateProduct(id, currentUser.uid, updated);
+    await updateProduct(id, currentUser.uid, updatedProduct);
 
     alert("Product updated successfully!");
     navigate("/");
