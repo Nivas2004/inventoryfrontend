@@ -16,6 +16,7 @@ function AddProduct() {
     purchasePrice: "",
     sellingPrice: "",
     stock: "",
+    userId: "", // IMPORTANT: backend expects this field
   });
 
   const { open } = useSidebar();
@@ -23,8 +24,17 @@ function AddProduct() {
   // 🔐 Auth check
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
-      if (!user) window.location.href = "/login";
-      else setCurrentUser(user);
+      if (!user) {
+        window.location.href = "/login";
+      } else {
+        setCurrentUser(user);
+
+        // store user ID into product object
+        setProduct((prev) => ({
+          ...prev,
+          userId: user.uid,
+        }));
+      }
     });
   }, []);
 
@@ -42,12 +52,12 @@ function AddProduct() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Convert price fields to number before sending
     const formattedProduct = {
       ...product,
-      purchasePrice: parseFloat(product.purchasePrice),
-      sellingPrice: parseFloat(product.sellingPrice),
+      purchasePrice: Number(product.purchasePrice),
+      sellingPrice: Number(product.sellingPrice),
       stock: Number(product.stock),
+      userId: currentUser.uid, // FINAL FIX
     };
 
     await addProduct(formattedProduct);
@@ -59,7 +69,6 @@ function AddProduct() {
     <div className="flex">
       <Sidebar />
 
-      {/* MAIN CONTENT SHIFTING BASED ON SIDEBAR */}
       <div
         className={`min-h-screen w-full bg-gray-100 transition-all duration-300 ${
           open ? "ml-64" : "ml-16"
@@ -81,6 +90,7 @@ function AddProduct() {
               onChange={(e) =>
                 setProduct({ ...product, name: e.target.value })
               }
+              required
             />
 
             <input
@@ -90,6 +100,7 @@ function AddProduct() {
               onChange={(e) =>
                 setProduct({ ...product, category: e.target.value })
               }
+              required
             />
 
             <input
@@ -99,6 +110,7 @@ function AddProduct() {
               onChange={(e) =>
                 setProduct({ ...product, supplier: e.target.value })
               }
+              required
             />
 
             <input
@@ -109,9 +121,10 @@ function AddProduct() {
               onChange={(e) =>
                 setProduct({
                   ...product,
-                  purchasePrice: parseFloat(e.target.value),
+                  purchasePrice: Number(e.target.value),
                 })
               }
+              required
             />
 
             <input
@@ -122,12 +135,12 @@ function AddProduct() {
               onChange={(e) =>
                 setProduct({
                   ...product,
-                  sellingPrice: parseFloat(e.target.value),
+                  sellingPrice: Number(e.target.value),
                 })
               }
+              required
             />
 
-            {/* Profit Calculation Box */}
             <div className="bg-blue-100 border border-blue-300 text-blue-800 p-3 rounded text-center font-semibold">
               Profit Percentage: {profit}% 📈
             </div>
@@ -138,8 +151,9 @@ function AddProduct() {
               placeholder="Stock Quantity"
               value={product.stock}
               onChange={(e) =>
-                setProduct({ ...product, stock: e.target.value })
+                setProduct({ ...product, stock: Number(e.target.value) })
               }
+              required
             />
 
             <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">

@@ -1,15 +1,38 @@
 import axios from "axios";
 
-const API_URL = "https://inventorybackend-3.onrender.com";
+// 🔥 Change this to your deployed backend OR local server
+const API_URL = "http://127.0.0.1:8000";
 
-export const getProducts = () => axios.get(`${API_URL}/products/`);
-export const deleteProduct = (id) => axios.delete(`${API_URL}/products/${id}`);
+// ------------------------------
+// GET ALL PRODUCTS OF ONE USER
+// ------------------------------
+export const getProducts = (userId) =>
+  axios.get(`${API_URL}/products/user/${userId}`);
 
+
+// ------------------------------
+// ADD PRODUCT (includes userId)
+// ------------------------------
 export const addProduct = (data) =>
   axios.post(`${API_URL}/products/`, data);
 
-export const getProductById = (id) =>
-  axios.get(`${API_URL}/products/${id}`);
 
-export const updateProduct = (id, data) =>
-  axios.put(`${API_URL}/products/${id}`, data);
+// ------------------------------
+// GET A SINGLE PRODUCT (protected by user)
+// ------------------------------
+export const getProductById = (id, userId) =>
+  axios.get(`${API_URL}/products/${id}/${userId}`);
+
+
+// ------------------------------
+// UPDATE PRODUCT (protected)
+// ------------------------------
+export const updateProduct = (id, userId, data) =>
+  axios.put(`${API_URL}/products/${id}/${userId}`, data);
+
+
+// ------------------------------
+// DELETE PRODUCT (protected)
+// ------------------------------
+export const deleteProduct = (id, userId) =>
+  axios.delete(`${API_URL}/products/${id}/${userId}`);

@@ -13,7 +13,7 @@ function Dashboard() {
 
   const { open } = useSidebar();
 
-  // Auth check
+  // AUTH CHECK
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (!user) window.location.href = "/login";
@@ -21,36 +21,40 @@ function Dashboard() {
     });
   }, []);
 
-  // Load products
-  const loadProducts = async () => {
-    try {
-      const res = await getProducts();
-      setProducts(res.data);
-    } catch (err) {
-      console.log("Error loading products:", err);
-    }
-  };
-
+  // LOAD PRODUCTS FOR CURRENT USER
   useEffect(() => {
-    loadProducts();
-  }, []);
+    if (!currentUser) return;
 
-  // Delete handler
+    const fetchProducts = async () => {
+      try {
+        const res = await getProducts(currentUser.uid);
+        setProducts(res.data);
+      } catch (err) {
+        console.log("Error fetching products:", err);
+      }
+    };
+
+    fetchProducts();
+  }, [currentUser]);
+
+  // DELETE PRODUCT
   const handleDelete = async (id) => {
+    if (!currentUser) return;
+
     if (window.confirm("Delete this product?")) {
-      await deleteProduct(id);
-      loadProducts();
+      await deleteProduct(id, currentUser.uid);
+
+      const res = await getProducts(currentUser.uid);
+      setProducts(res.data);
     }
   };
 
-  // Search filter
+  // SEARCH FILTER
   const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // ---------------------------
-  // CSV EXPORT FUNCTION
-  // ---------------------------
+  // EXPORT CSV
   const exportToCSV = () => {
     if (products.length === 0) return alert("No products to export!");
 
@@ -62,8 +66,7 @@ function Dashboard() {
       PurchasePrice: p.purchasePrice,
       SellingPrice: p.sellingPrice,
       ProfitPercent: (
-        ((p.sellingPrice - p.purchasePrice) / p.purchasePrice) *
-        100
+        ((p.sellingPrice - p.purchasePrice) / p.purchasePrice) * 100
       ).toFixed(2),
       Stock: p.stock,
     }));
@@ -73,18 +76,17 @@ function Dashboard() {
     csvRows.push(headers.join(","));
 
     csvData.forEach((row) => {
-      const values = headers.map((h) => row[h]);
-      csvRows.push(values.join(","));
+      csvRows.push(headers.map((h) => row[h]).join(","));
     });
 
-    const csvString = csvRows.join("\n");
-    const blob = new Blob([csvString], { type: "text/csv" });
-
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
     a.download = "Inventory_Report.csv";
     a.click();
+
     window.URL.revokeObjectURL(url);
   };
 
@@ -173,6 +175,7 @@ function Dashboard() {
                         <td className="p-3">{p.category}</td>
                         <td className="p-3 font-medium">₹ {p.purchasePrice}</td>
                         <td className="p-3 font-medium">₹ {p.sellingPrice}</td>
+
                         <td
                           className={`p-3 font-semibold ${
                             profit >= 0 ? "text-green-600" : "text-red-600"
@@ -180,12 +183,15 @@ function Dashboard() {
                         >
                           {profit}%
                         </td>
+
                         <td className="p-3">{p.supplier}</td>
                         <td className="p-3">{p.stock}</td>
 
                         <td className="p-3 flex items-center justify-center gap-2">
+
+                          {/* UPDATED EDIT LINK WITH USER ID */}
                           <a
-                            href={`/edit/${p.id}`}
+                            href={`/edit/${p.id}/${currentUser.uid}`}
                             className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
                           >
                             Edit

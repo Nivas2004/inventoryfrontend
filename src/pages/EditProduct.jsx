@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getProductById, updateProduct } from "../api";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import { auth } from "../firebase";
@@ -8,8 +8,10 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useSidebar } from "../context/SidebarContext";
 
 function EditProduct() {
-  const { id } = useParams();
+  const { id, uid } = useParams(); // 🔥 important (id + user uid)
   const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState({
     name: "",
@@ -18,45 +20,79 @@ function EditProduct() {
     purchasePrice: "",
     sellingPrice: "",
     stock: "",
+    userId: "",
   });
 
-  const { open } = useSidebar(); // <-- ADDED
+  const { open } = useSidebar();
 
-  // 🔐 Login check
+  // 🔐 AUTH CHECK
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
-      if (!user) window.location.href = "/login";
-      else setCurrentUser(user);
+      if (!user) {
+        window.location.href = "/login";
+      } else {
+        setCurrentUser(user);
+      }
     });
   }, []);
 
-  // Load product details
+  // 🔥 LOAD PRODUCT USING userId + id
   useEffect(() => {
-    const load = async () => {
-      const res = await getProductById(id);
+    if (!currentUser) return;
 
-      // Remove _id field before setting state
-      const { _id, ...cleanData } = res.data;
+    const loadProduct = async () => {
+      try {
+        const res = await getProductById(id, currentUser.uid);
+        const data = res.data;
 
-      setProduct(cleanData);
+        // Security : check user ownership
+        if (data.userId !== currentUser.uid) {
+          alert("You do not have permission to edit this product.");
+          navigate("/");
+          return;
+        }
+
+        setProduct(data);
+        setLoading(false);
+      } catch (err) {
+        console.log("Error loading product:", err);
+        alert("Failed to load product.");
+      }
     };
 
-    load();
-  }, [id]);
+    loadProduct();
+  }, [currentUser, id, navigate]);
 
-  // Update handler
+  // UPDATE PRODUCT
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await updateProduct(id, product);
+
+    const updated = {
+      ...product,
+      purchasePrice: Number(product.purchasePrice),
+      sellingPrice: Number(product.sellingPrice),
+      stock: Number(product.stock),
+      userId: currentUser.uid, // ensure correct assignment
+    };
+
+    await updateProduct(id, currentUser.uid, updated);
+
     alert("Product updated successfully!");
-    window.location.href = "/";
+    navigate("/");
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-xl">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="flex">
       <Sidebar />
 
-      {/* ⭐ FIXED MARGIN LIKE DASHBOARD ⭐ */}
       <div
         className={`min-h-screen w-full bg-gray-100 transition-all duration-300 ${
           open ? "ml-64" : "ml-16"
@@ -75,7 +111,9 @@ function EditProduct() {
               className="border p-2 w-full"
               placeholder="Product Name"
               value={product.name}
-              onChange={(e) => setProduct({ ...product, name: e.target.value })}
+              onChange={(e) =>
+                setProduct({ ...product, name: e.target.value })
+              }
               required
             />
 
@@ -105,7 +143,10 @@ function EditProduct() {
               placeholder="Purchase Price"
               value={product.purchasePrice}
               onChange={(e) =>
-                setProduct({ ...product, purchasePrice: e.target.value })
+                setProduct({
+                  ...product,
+                  purchasePrice: e.target.value,
+                })
               }
               required
             />
@@ -116,7 +157,10 @@ function EditProduct() {
               placeholder="Selling Price"
               value={product.sellingPrice}
               onChange={(e) =>
-                setProduct({ ...product, sellingPrice: e.target.value })
+                setProduct({
+                  ...product,
+                  sellingPrice: e.target.value,
+                })
               }
               required
             />
